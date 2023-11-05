@@ -20,25 +20,32 @@ def plot_start(x, y):
     plt.figure(figsize=(x, y))
 
 
-def plot_update(path, data):
-    plt.clf()
+def plot_update(data, specific):
+    x2, y2, y3, y4, road = zip(*data)
+    for i in range(len(road)):
+        x1, y1 = zip(*(road[i]))
+        plt.clf()
+        plt.subplot(2, 2, 1)
+        plt.scatter(x1, y1)
+        plt.plot(x1, y1, color='red')
+        plt.title(f'TOWNS: {len(x1)}')
 
-    x, y = zip(*path)
-    plt.subplot(2, 2, 1)
-    plt.scatter(x, y)
-    plt.plot(x, y, color='red')
+        plt.subplot(2, 2, 2)
+        plt.plot(x2[:i+1], y2[:i+1], color='red')
+        plt.title(f'DISTANCE: {y2[i]}')
 
-    x, y1, y2, y3 = zip(*data)
-    plt.subplot(2, 2, 2)
-    plt.plot(x, y1, color='red')
+        plt.subplot(2, 2, 3)
+        plt.plot(x2[:i+1], y3[:i+1], color='red')
+        plt.title(f'{specific}: {y3[i]}')
 
-    plt.subplot(2, 2, 3)
-    plt.plot(x, y2, color='red')
+        plt.subplot(2, 2, 4)
+        plt.plot(x2[:i+1], y4[:i+1], color='red')
+        plt.title(f'THRESHOLD: {y4[i]}')
+        plt.pause(0.001)
+        plt.draw()
 
-    plt.subplot(2, 2, 4)
-    plt.plot(x, y3, color='red')
-    plt.pause(0.01)
-    plt.draw()
+    plt.pause(5)
+    plt.close()
 
 
 def distance(path):
@@ -48,7 +55,7 @@ def distance(path):
     return dist
 
 
-def tabu(path, max_threshold=25, tabu_size=25, plotting=True):
+def tabu(path, max_threshold=25, tabu_size=25):
     def neighborhood_swap(entry):
         neighbor_list = []
 
@@ -71,14 +78,11 @@ def tabu(path, max_threshold=25, tabu_size=25, plotting=True):
         return neighbor_list
 
     threshold = 0
-    iteration = 0
 
     tabu_list = [path]
     best_solution, best_candidate = path, path
     data = []
 
-    if plotting:
-        plot_start(8, 8)
     while threshold < max_threshold:
         if random.random() > 0.5:
             neighbors = neighborhood_swap(best_candidate)
@@ -99,16 +103,12 @@ def tabu(path, max_threshold=25, tabu_size=25, plotting=True):
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
 
-        iteration += 1
-        if plotting:
-            data.append((len(data) + 1, distance(best_solution), len(tabu_list), threshold))
-            plot_update(best_solution, data)
-            print(f"Iteration: {iteration} Distance: {distance(best_solution)} Tabu list occupation: {len(tabu_list)} Threshold: {threshold}")
+        data.append((len(data) + 1, round(distance(best_solution), 3), len(tabu_list), threshold, best_solution))
 
-    return distance(best_solution)
+    return data
 
 
-def simulated_annealing(path, alpha=0.995, temperature=3, plotting=True):
+def simulated_annealing(path, alpha=0.995, temperature=3):
     def random_neighbor_swap(entry):
         new_path = deepcopy(entry)
         x, y = 0, 0
@@ -153,16 +153,12 @@ def simulated_annealing(path, alpha=0.995, temperature=3, plotting=True):
         return new_path
 
     threshold = 0
-    iteration = 0
 
     max_threshold = 8 * len(path)
     max_one_temp = 18 * len(path)
 
     best_solution = path
     data = []
-
-    if plotting:
-        plot_start(8, 8)
 
     while threshold < max_threshold:
         choice = random.choice([1, 2, 3, 4])
@@ -189,32 +185,110 @@ def simulated_annealing(path, alpha=0.995, temperature=3, plotting=True):
                     threshold = 0
 
         if len(data) > 0:
-            if data[-1][1] == distance(best_solution):
+            if data[-1][1] == round(distance(best_solution), 3):
                 threshold += 1
 
         temperature *= alpha
-        iteration += 1
-        data.append((len(data) + 1, distance(best_solution), temperature, threshold))
+        data.append((len(data) + 1, round(distance(best_solution), 3), round(temperature, 3), threshold, best_solution))
 
-        if plotting:
-            plot_update(best_solution, data)
-            print(f"Iteration: {len(data)} Distance: {distance(best_solution)} Temperature: {temperature} Threshold: {threshold}")
-
-    return distance(best_solution)
+    return data
 
 
-def test(n, algorithm):
-    sum = 0
+def ask_number(n):
+    while True:
+        try:
+            decision_number = int(input("What iteration to choose: ")) - 1
+        except ValueError:
+            print("Enter integer")
+            continue
+
+        if n > decision_number >= 0:
+            return decision_number
+        else:
+            print("Integer out of range")
+
+
+def avg(lst, n):                               # Calculate average of a specific index in a list of lists.
+    temp = 0
     for i in range(n):
-        start = generation(20)
-        time_start = time.time()
-        algorithm(start, plotting=False)
-        time_end = time.time()
-        stop = time_end - time_start
-        print(stop)
-        sum += stop
+        temp += lst[i][1]
 
-    print(sum/n)
+    return temp/n
 
 
-test(50, tabu)
+def test(n, towns):
+    results = []
+    for i in range(n):
+        start = generation(towns)
+        time_start1 = time.time()
+        data1 = tabu(start)
+        time_end1 = time.time()
+
+        time_start2 = time.time()
+        data2 = simulated_annealing(start)
+        time_end2 = time.time()
+
+        results.append((data1, round(time_end1 - time_start1, 3), data2, round(time_end2 - time_start2, 3)))
+
+    df = pandas.DataFrame(results, columns=["tabu", "tabu_time", "sa", "sa_time"])
+    df.to_csv('output/results.csv', index=False)
+
+    tabu_df = []
+    sa_df = []
+    for i in range(0, n):
+        tabu_df.append([pandas.DataFrame(df.tabu.at[i], columns=['iteration', 'distance', 'tabu_list', 'threshold', 'path']), df.tabu_time.at[i]])
+        sa_df.append([pandas.DataFrame(df.sa.at[i], columns=['iteration', 'distance', 'temperature', 'threshold', 'path']), df.sa_time.at[i]])
+
+    print("Write help to get list of commands")
+
+    while True:
+        decision = input("Action: ").lower()
+        if decision == "animation":
+            iteration = ask_number(n)
+
+            while True:
+                decision = input("What algorithm to animate: ")
+                if decision == "annealing":
+                    plot_start(8, 8)
+                    plot_update(sa_df[iteration][0].values.tolist(), "TEMPERATURE")
+                    break
+
+                elif decision == "tabu":
+                    plot_start(8, 8)
+                    plot_update(tabu_df[iteration][0].values.tolist(), "TABU LIST SIZE")
+                    break
+                else:
+                    print("Wrong algorithm")
+
+        elif decision == "statistic":
+            iteration = ask_number(n)
+
+            while True:
+                decision = input("What algorithm to analyze: ")
+                if decision == "annealing":
+                    print(f"\nAnalysis of {iteration + 1}. iteration of Simulated Annealing algorithm values\n")
+                    print(sa_df[iteration][0].describe())
+                    print(f"\nAverage Simulated Annealing time: {round(avg(sa_df, n), 3)}")
+                    break
+
+                elif decision == "tabu":
+                    print(f"\nAnalysis of {iteration + 1}. iteration of Tabu search algorithm values\n")
+                    print(tabu_df[iteration][0].describe())
+                    print(f"\nAverage Tabu search time: {round(avg(tabu_df, n), 3)}")
+                    break
+                else:
+                    print("Wrong algorithm")
+
+        elif decision == "help":
+            print("animation returns visualization about certain solution")
+            print("statistic returns statistical values about certain solution")
+            print("exit will end the program")
+
+        elif decision == "exit":
+            break
+
+        else:
+            print("Wrong input")
+
+
+test(10, 20)
