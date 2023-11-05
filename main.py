@@ -15,9 +15,9 @@ def generation(n):
     return gen
 
 
-def plot_start(x, y):
+def plot_start(name):
     plt.ion()
-    plt.figure(figsize=(x, y))
+    plt.figure(figsize=(8, 8), num=name)
 
 
 def plot_update(data, specific):
@@ -28,19 +28,31 @@ def plot_update(data, specific):
         plt.subplot(2, 2, 1)
         plt.scatter(x1, y1)
         plt.plot(x1, y1, color='red')
+
         plt.title(f'TOWNS: {len(x1)}')
 
         plt.subplot(2, 2, 2)
         plt.plot(x2[:i+1], y2[:i+1], color='red')
+
         plt.title(f'DISTANCE: {y2[i]}')
+        plt.xlabel('ITERATION')
+        plt.ylabel('DISTANCE')
 
         plt.subplot(2, 2, 3)
         plt.plot(x2[:i+1], y3[:i+1], color='red')
+
         plt.title(f'{specific}: {y3[i]}')
+        plt.xlabel('ITERATION')
+        plt.ylabel(specific)
 
         plt.subplot(2, 2, 4)
         plt.plot(x2[:i+1], y4[:i+1], color='red')
+
         plt.title(f'THRESHOLD: {y4[i]}')
+        plt.xlabel('ITERATION')
+        plt.ylabel('THRESHOLD')
+
+        plt.tight_layout()
         plt.pause(0.001)
         plt.draw()
 
@@ -208,7 +220,7 @@ def ask_number(n):
             print("Integer out of range")
 
 
-def avg(lst, n):                               # Calculate average of a specific index in a list of lists.
+def avg(lst, n):
     temp = 0
     for i in range(n):
         temp += lst[i][1]
@@ -240,49 +252,33 @@ def test(n, towns):
         sa_df.append([pandas.DataFrame(df.sa.at[i], columns=['iteration', 'distance', 'temperature', 'threshold', 'path']), df.sa_time.at[i]])
 
     print("Write help to get list of commands")
-
     while True:
         decision = input("Action: ").lower()
         if decision == "animation":
             iteration = ask_number(n)
 
-            while True:
-                decision = input("What algorithm to animate: ")
-                if decision == "annealing":
-                    plot_start(8, 8)
-                    plot_update(sa_df[iteration][0].values.tolist(), "TEMPERATURE")
-                    break
+            plot_start("Tabu Search algorithm")
+            plot_update(tabu_df[iteration][0].values.tolist(), "TABU LIST SIZE")
 
-                elif decision == "tabu":
-                    plot_start(8, 8)
-                    plot_update(tabu_df[iteration][0].values.tolist(), "TABU LIST SIZE")
-                    break
-                else:
-                    print("Wrong algorithm")
+            plot_start("Simulated Annealing algorithm")
+            plot_update(sa_df[iteration][0].values.tolist(), "TEMPERATURE")
 
-        elif decision == "statistic":
+        elif decision == "stats":
             iteration = ask_number(n)
+            print(f"Analysis of {iteration + 1}. iteration of Tabu search algorithm values\n")
+            print(tabu_df[iteration][0].iloc[:, 1:].describe())
+            print(f"\nTime of {iteration + 1}. iteration of Tabu search algorithm: {tabu_df[iteration][1]} s")
+            print(f"Average time of Tabu search algorithm: {round(avg(tabu_df, n), 3)} s")
 
-            while True:
-                decision = input("What algorithm to analyze: ")
-                if decision == "annealing":
-                    print(f"\nAnalysis of {iteration + 1}. iteration of Simulated Annealing algorithm values\n")
-                    print(sa_df[iteration][0].describe())
-                    print(f"\nAverage Simulated Annealing time: {round(avg(sa_df, n), 3)}")
-                    break
-
-                elif decision == "tabu":
-                    print(f"\nAnalysis of {iteration + 1}. iteration of Tabu search algorithm values\n")
-                    print(tabu_df[iteration][0].describe())
-                    print(f"\nAverage Tabu search time: {round(avg(tabu_df, n), 3)}")
-                    break
-                else:
-                    print("Wrong algorithm")
+            print(f"\nAnalysis of {iteration + 1}. iteration of Simulated Annealing algorithm values\n")
+            print(sa_df[iteration][0].iloc[:, 1:].describe())
+            print(f"\nTime of {iteration + 1}. iteration of Simulated Annealing  algorithm: {tabu_df[iteration][1]} s")
+            print(f"Average time of Simulated Annealing algorithm: {round(avg(sa_df, n), 3)} s\n")
 
         elif decision == "help":
             print("animation returns visualization about certain solution")
-            print("statistic returns statistical values about certain solution")
-            print("exit will end the program")
+            print("stats returns statistical values about certain solution")
+            print("exit will end the program\n")
 
         elif decision == "exit":
             break
@@ -291,4 +287,16 @@ def test(n, towns):
             print("Wrong input")
 
 
-test(10, 20)
+while True:
+    try:
+        town_number = int(input("How many towns to choose: "))
+        times = int(input("How many iterations of problem to choose: "))
+    except ValueError:
+        print("Enter integer")
+        continue
+
+    if town_number > 0 and times > 0:
+        test(times, town_number)
+        break
+    else:
+        print("Enter at least 4 towns and 1 iteration")
