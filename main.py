@@ -6,21 +6,23 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 
 
-def generation(n):
+def generation(n):  # Generate a list of random coordinates (nodes) with a specified length.
     gen = []
     while len(gen) != n:
         node = (random.randint(0, 200), random.randint(0, 200))
         if node not in gen:
             gen.append(node)
+
+    gen.append(gen[0])
     return gen
 
 
-def plot_start(name):
+def plot_start(name):   # Initialize a new plot for visualization.
     plt.ion()
     plt.figure(figsize=(8, 8), num=name)
 
 
-def plot_update(data, specific):
+def plot_update(data, specific):    # Update the plot with specified data.
     x2, y2, y3, y4, road = zip(*data)
     for i in range(len(road)):
         x1, y1 = zip(*(road[i]))
@@ -29,7 +31,7 @@ def plot_update(data, specific):
         plt.scatter(x1, y1)
         plt.plot(x1, y1, color='red')
 
-        plt.title(f'TOWNS: {len(x1)}')
+        plt.title(f'TOWNS: {len(x1) - 1}')
 
         plt.subplot(2, 2, 2)
         plt.plot(x2[:i+1], y2[:i+1], color='red')
@@ -60,15 +62,15 @@ def plot_update(data, specific):
     plt.close()
 
 
-def distance(path):
+def distance(path):  # Calculate the total distance of a path connecting a series of points.
     dist = 0
     for j in range(1, len(path)):
         dist = dist + math.sqrt((path[j][0] - path[j - 1][0]) ** 2 + (path[j][1] - path[j - 1][1]) ** 2)
     return dist
 
 
-def tabu(path, max_threshold=25, tabu_size=25):
-    def neighborhood_swap(entry):
+def tabu(path, max_threshold=25, tabu_size=25):  # Solve the Traveling Salesman Problem using Tabu Search.
+    def neighborhood_swap(entry):  # Inner function for generating neighbor solutions by swapping cities
         neighbor_list = []
 
         for i in range(1, len(entry) - 1):
@@ -79,7 +81,7 @@ def tabu(path, max_threshold=25, tabu_size=25):
 
         return neighbor_list
 
-    def neighborhood_2opt(entry):
+    def neighborhood_2opt(entry):  # Inner function for generating neighbor solutions using 2-opt technique
         neighbor_list = []
 
         for i in range(1, len(entry) - 2):
@@ -120,8 +122,8 @@ def tabu(path, max_threshold=25, tabu_size=25):
     return data
 
 
-def simulated_annealing(path, alpha=0.995, temperature=3):
-    def random_neighbor_swap(entry):
+def simulated_annealing(path, alpha=0.995, temperature=3):  # Solve the Traveling Salesman Problem using Simulated Annealing.
+    def random_neighbor_swap(entry):  # Inner function for generating a new path by swapping two random cities.
         new_path = deepcopy(entry)
         x, y = 0, 0
         while x == y:
@@ -131,7 +133,7 @@ def simulated_annealing(path, alpha=0.995, temperature=3):
         new_path[x], new_path[y] = new_path[y], new_path[x]
         return new_path
 
-    def random_neighbor_shuffle(entry):
+    def random_neighbor_shuffle(entry):  # Inner function for generating a new path by shuffling a random segment of cities.
         new_path = deepcopy(entry)
         x, y = 0, 0
         while x == y:
@@ -142,7 +144,7 @@ def simulated_annealing(path, alpha=0.995, temperature=3):
         random.shuffle(shuffle)
         return new_path[:min(x, y)] + shuffle + new_path[max(x, y) + 1:]
 
-    def random_neighbor_inverse(entry):
+    def random_neighbor_inverse(entry):  # Inner function for generating a new path by inverting the order of a random segment of cities.
         new_path = deepcopy(entry)
         x, y = 0, 0
         while x == y:
@@ -152,7 +154,7 @@ def simulated_annealing(path, alpha=0.995, temperature=3):
         new_path[min(x, y):max(x, y) + 1] = new_path[min(x, y):max(x, y) + 1][::-1]
         return new_path
 
-    def random_neighbor_insert(entry):
+    def random_neighbor_insert(entry):   # Inner function for generating a new path by inserting a random city at a random position.
         new_path = deepcopy(entry)
         x, y = 0, 0
         while x == y:
@@ -206,7 +208,7 @@ def simulated_annealing(path, alpha=0.995, temperature=3):
     return data
 
 
-def ask_number(n):
+def ask_number(n):  # Prompt the user to input an iteration number.
     while True:
         try:
             decision_number = int(input("What iteration to choose: ")) - 1
@@ -220,7 +222,7 @@ def ask_number(n):
             print("Integer out of range")
 
 
-def avg(lst, n):
+def avg(lst, n):  # Calculate the average of a list of values.
     temp = 0
     for i in range(n):
         temp += lst[i][1]
@@ -228,7 +230,7 @@ def avg(lst, n):
     return temp/n
 
 
-def test(n, towns):
+def test(n, towns):  # Perform multiple iterations of solving the Traveling Salesman Problem and provide analysis.
     results = []
     for i in range(n):
         start = generation(towns)
