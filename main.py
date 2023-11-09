@@ -55,7 +55,7 @@ def plot_update(data, specific):    # Update the plot with specified data.
         plt.ylabel('THRESHOLD')
 
         plt.tight_layout()
-        plt.pause(0.001)
+        plt.pause(0.01)
         plt.draw()
 
     plt.pause(5)
@@ -70,7 +70,7 @@ def distance(path):  # Calculate the total distance of a path connecting a serie
 
 
 def tabu(path, max_threshold=25, tabu_size=25):  # Solve the Traveling Salesman Problem using Tabu Search.
-    def neighborhood_swap(entry):  # Inner function for generating neighbor solutions by swapping cities
+    def neighborhood_swap(entry):  # Inner function for generating list of all neighbors solutions by swapping cities
         neighbor_list = []
 
         for i in range(1, len(entry) - 1):
@@ -81,7 +81,7 @@ def tabu(path, max_threshold=25, tabu_size=25):  # Solve the Traveling Salesman 
 
         return neighbor_list
 
-    def neighborhood_2opt(entry):  # Inner function for generating neighbor solutions using 2-opt technique
+    def neighborhood_2opt(entry):  # Inner function for generating list of all neighbors solutions using 2-opt technique
         neighbor_list = []
 
         for i in range(1, len(entry) - 2):
@@ -232,6 +232,7 @@ def avg(lst, n):  # Calculate the average of a list of values.
 
 def test(n, towns):  # Perform multiple iterations of solving the Traveling Salesman Problem and provide analysis.
     results = []
+
     for i in range(n):
         start = generation(towns)
         time_start1 = time.time()
@@ -269,12 +270,14 @@ def test(n, towns):  # Perform multiple iterations of solving the Traveling Sale
             iteration = ask_number(n)
             print(f"Analysis of {iteration + 1}. iteration of Tabu search algorithm values\n")
             print(tabu_df[iteration][0].iloc[:, 1:].describe())
+
             print(f"\nTime of {iteration + 1}. iteration of Tabu search algorithm: {tabu_df[iteration][1]} s")
             print(f"Average time of Tabu search algorithm: {round(avg(tabu_df, n), 3)} s")
 
             print(f"\nAnalysis of {iteration + 1}. iteration of Simulated Annealing algorithm values\n")
             print(sa_df[iteration][0].iloc[:, 1:].describe())
-            print(f"\nTime of {iteration + 1}. iteration of Simulated Annealing  algorithm: {tabu_df[iteration][1]} s")
+
+            print(f"\nTime of {iteration + 1}. iteration of Simulated Annealing  algorithm: {sa_df[iteration][1]} s")
             print(f"Average time of Simulated Annealing algorithm: {round(avg(sa_df, n), 3)} s\n")
 
         elif decision == "help":
