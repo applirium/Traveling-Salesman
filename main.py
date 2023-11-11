@@ -231,7 +231,7 @@ def avg(lst, n):  # Calculate the average of a list of values.
     return temp/n
 
 
-def test(n, towns):  # Perform multiple iterations of solving the Traveling Salesman Problem and provide analysis.
+def test(n, towns, incremental=False):  # Perform multiple iterations of solving the Traveling Salesman Problem and provide analysis.
     results = []
 
     for i in range(n):
@@ -245,6 +245,10 @@ def test(n, towns):  # Perform multiple iterations of solving the Traveling Sale
         time_end2 = time.time()
 
         results.append((data1, round(time_end1 - time_start1, 3), data2, round(time_end2 - time_start2, 3)))
+
+        if incremental:
+            print(towns)
+            towns += 1
 
     df = pandas.DataFrame(results, columns=["tabu", "tabu_time", "sa", "sa_time"])
     df.to_csv('output/results.csv', index=False)
@@ -294,15 +298,33 @@ def test(n, towns):  # Perform multiple iterations of solving the Traveling Sale
 
 
 while True:
+    testik = input("Type test: ").lower()
+    if testik == "incremental" or testik == "same":
+        break
+    elif testik == "help":
+        print("same starts repeated test with constant of towns")
+        print("incremental starts incremental test with incrementing towns")
+    else:
+        print("Wrong input")
+
+while True:
     try:
-        town_number = int(input("How many towns to choose: "))
-        times = int(input("How many iterations of problem to choose: "))
+        if testik == "same":
+            town_number = int(input("How many towns to choose: "))
+            times = int(input("How many iterations of problem to choose: "))
+        else:
+            town_number = 4
+            times = int(input("Max number of towns to choose: ")) - 3
+
     except ValueError:
         print("Enter integer")
         continue
 
     if town_number > 0 and times > 0:
-        test(times, town_number)
+        if testik == "same":
+            test(times, town_number)
+        else:
+            test(times, town_number, True)
         break
     else:
         print("Enter at least 4 towns and 1 iteration")
