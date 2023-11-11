@@ -95,7 +95,7 @@ def tabu(path, max_threshold=25, tabu_size=25):  # Solve the Traveling Salesman 
 
     tabu_list = [path]
     best_solution, best_candidate = path, path
-    data = []
+    data = [(1, round(distance(best_solution), 3), len(tabu_list), threshold, best_solution)]
 
     while threshold < max_threshold:
         if random.random() > 0.5:
@@ -113,6 +113,7 @@ def tabu(path, max_threshold=25, tabu_size=25):  # Solve the Traveling Salesman 
             threshold = 0
         else:
             threshold += 1
+
         tabu_list.append(best_candidate)
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
@@ -172,7 +173,7 @@ def simulated_annealing(path, alpha=0.995, temperature=3):  # Solve the Travelin
     max_one_temp = 18 * len(path)
 
     best_solution = path
-    data = []
+    data = [(1, round(distance(best_solution), 3), round(temperature, 3), threshold, best_solution)]
 
     while threshold < max_threshold:
         choice = random.choice([1, 2, 3, 4])
