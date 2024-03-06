@@ -58,7 +58,7 @@ def plot_update(data, specific):    # Update the plot with specified data.
         plt.pause(0.01)
         plt.draw()
 
-    plt.pause(5)
+    plt.pause(10)
     plt.close()
 
 
