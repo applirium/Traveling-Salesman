@@ -259,7 +259,7 @@ def test(n, towns, incremental=False):  # Perform multiple iterations of solving
         tabu_df.append([pandas.DataFrame(df.tabu.at[i], columns=['iteration', 'distance', 'tabu_list', 'threshold', 'path']), df.tabu_time.at[i]])
         sa_df.append([pandas.DataFrame(df.sa.at[i], columns=['iteration', 'distance', 'temperature', 'threshold', 'path']), df.sa_time.at[i]])
 
-    print("Write help to get list of commands")
+    print("ANIMATION | STATS | HELP")
     while True:
         decision = input("Action: ").lower()
         if decision == "animation":
@@ -297,6 +297,7 @@ def test(n, towns, incremental=False):  # Perform multiple iterations of solving
             print("Wrong input")
 
 
+print("SAME | INCREMENTAL | HELP ")
 while True:
     testik = input("Type test: ").lower()
     if testik == "incremental" or testik == "same":
